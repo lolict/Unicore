@@ -1,185 +1,88 @@
-# UniCore - 统一智能核心系统
+# UniCore - 通用核心平台
 
-## 愿景
+完全自主设计的统一指令集架构，支持多语言协作开发。
 
-> "创造一个没有平台之别、没有硬件束缚的统一计算系统"
+## ✨ 特性
 
-## 核心理念
+- **UniISA**: 自主统一指令集架构
+- **通用虚拟机**: 跨平台执行
+- **二进制翻译器**: x86/ARM/RISC-V/MIPS 到 UniISA
+- **多语言协作**: Zig + Rust + Go + Python
+- **云端同步**: GitHub Gist + WebDAV + P2P
+- **跨平台**: Web/Android/ESP32
 
-- **统一时序**: 所有操作在同一时间维度完成
-- **统一能力**: 一个核心拥有所有功能
-- **统一关系**: 所有平台共享同一运行时
-- **无依赖**: 不依赖任何特定环境
+## 🚀 快速开始
 
----
+```bash
+# 克隆项目
+git clone https://github.com/lolict/Unicore.git
+cd UniCore
 
-## 🏗️ 技术架构
+# 构建
+zig build
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    AI 智能层 (Python)                        │
-│               意图理解 / 任务分解 / 知识推理                  │
-├─────────────────────────────────────────────────────────────┤
-│                    并发加速层 (Go)                          │
-│               并行计算 / 网络通信 / 流式处理                 │
-├─────────────────────────────────────────────────────────────┤
-│                    安全包装层 (Rust)                         │
-│               内存安全 / FFI绑定 / 错误处理                  │
-├─────────────────────────────────────────────────────────────┤
-│                    核心驱动层 (Zig)                          │
-│               系统调用 / 硬件控制 / 编译时计算                │
-├─────────────────────────────────────────────────────────────┤
-│                 WASM/WASI 统一运行时                        │
-│               字节码执行 / 跨平台兼容 / 沙箱安全              │
-└─────────────────────────────────────────────────────────────┘
+# 运行
+zig build run
 ```
 
----
-
-## 📦 目录结构
+## 📁 项目结构
 
 ```
 UniCore/
 ├── src/
 │   ├── core/
-│   │   ├── isa/              # UniISA 统一指令集
-│   │   ├── runtime/          # WASM运行时
-│   │   ├── protocol/         # 协议层（契约/权限）
-│   │   └── tools/            # 工具集（音视频/图像）
-│   ├── lang/
-│   │   ├── zig/              # Zig核心层
-│   │   ├── rust/             # Rust安全层
-│   │   ├── go/               # Go并发层
-│   │   └── python/           # Python AI层
-│   └── platform/
-│       ├── android/          # Android打包
-│       ├── esp32/            # ESP32固件
-│       ├── windows/          # Windows程序
-│       ├── mac/              # macOS程序
-│       └── web/              # 网页版本
-├── build/                     # 构建产物
-└── dist/                     # 最终分发包
+│   │   ├── uniisa.zig        # UniISA 核心
+│   │   ├── translator.zig    # 二进制翻译器
+│   │   └── vm/               # 虚拟机
+│   ├── cloud/               # 云端同步模块
+│   │   ├── gist/            # GitHub Gist
+│   │   ├── webdav/          # WebDAV/坚果云
+│   │   ├── p2p/             # WebRTC P2P
+│   │   └── sync/            # 统一调度器
+│   ├── lang/               # 多语言模块
+│   └── platform/           # 跨平台支持
+└── tests/                  # 测试用例
 ```
 
----
+## 🔧 二进制翻译器使用
 
-## 🚀 快速开始
+```zig
+const translator = @import("core/translator.zig");
 
-### 网页版（直接打开）
+var trans = translator.BinaryTranslator.init(allocator);
+defer trans.deinit();
 
-```
-src/platform/web/index.html
-```
+// 自动检测并翻译
+const translated = try trans.translateAuto(binary_data);
 
-### Android APP 打包
-
-1. 下载 [HBuilderX](https://www.dcloud.io/hbuilderx.html)
-2. 导入 `src/platform/android/` 目录
-3. 右键 → 发行 → 原生App-云打包 → Android
-
-### ESP32 固件
-
-需要安装：
-- ESP-IDF
-- Zig 编译器
-
-```bash
-cd src/platform/esp32
-idf.py build
-idf.py flash
+// 或者指定架构
+const x86 = try trans.translateX86(x86_bytes);
+const arm = try trans.translateARM(arm_bytes);
+const rv = try trans.translateRISC_V(riscv_bytes);
 ```
 
-### Windows/macOS 程序
-
-```bash
-# Windows
-go build -o unicore.exe src/lang/go/...
-
-# macOS
-go build -o unicore src/lang/go/...
-```
-
----
-
-## 📋 UniISA 指令集
-
-| 类别 | 指令 | 说明 |
-|------|------|------|
-| 计算 | `ADD`, `SUB`, `MUL`, `DIV` | 算术运算 |
-| 逻辑 | `AND`, `OR`, `NOT`, `XOR` | 位运算 |
-| 控制 | `JMP`, `JZ`, `CALL`, `RET` | 流程控制 |
-| 内存 | `LOAD`, `STORE`, `ALLOC` | 内存操作 |
-| 并行 | `SPAWN`, `SYNC`, `SEND` | 并发操作 |
-| AI | `INFER`, `EMBED`, `ATTENTION` | AI推理 |
-
----
-
-## 🛠️ 工具能力
-
-| 工具 | 功能 |
-|------|------|
-| 音频 | 播放音频、语音识别、语音合成 |
-| 图像 | 生成图像、图像处理、渲染 |
-| 视频 | 视频捕获、编码、解码 |
-| 控制 | 传感器读取、振动、位置 |
-| 文件 | 文件读写、列表、删除 |
-| 网络 | HTTP请求、WebSocket通信 |
-
----
-
-## 📱 支持平台
-
-| 平台 | 运行时 | 大小 |
-|------|--------|------|
-| Android | HBuilderX云打包 | ~5MB |
-| ESP32 | wasm3-micro | ~50KB |
-| Windows | Wasmtime | ~10MB |
-| macOS | Wasmtime | ~10MB |
-| Web | 原生WASM | 0KB |
-
----
-
-## 🔧 开发指南
-
-### 添加新的AI能力
-
-编辑 `src/lang/python/ai_core.py`：
+## 📡 云端同步
 
 ```python
-class UniCoreAI:
-    def new_capability(self, input_text):
-        # 实现你的AI功能
-        return {"result": "..."}
+from src.cloud.sync.scheduler import UniCoreSyncManager
+
+# 初始化
+sync = UniCoreSyncManager()
+sync.configure_github("ghp_token", "username")
+sync.configure_nutstore("email", "password")
+
+# 同步数据
+gist_id = sync.sync("config", data)
 ```
 
-### 添加新的工具
+## 📋 支持的架构
 
-编辑 `src/core/tools/tools.js`：
+- ✅ x86/x64
+- ✅ ARMv7+
+- ✅ RISC-V (RV32/64)
+- ✅ MIPS
+- ✅ WebAssembly (WASM)
 
-```javascript
-class AudioTool {
-    newTool(param) {
-        // 实现你的工具
-    }
-}
-```
+## 📝 许可证
 
-### 定义新协议
-
-编辑 `src/core/protocol/protocol.js`：
-
-```javascript
-class Contract {
-    add_rule("new_permission", { max_calls: 10 });
-}
-```
-
----
-
-## 📄 License
-
-MIT License - 公共资源，自由使用
-
----
-
-**UniCore - 让计算真正统一**
+MIT
