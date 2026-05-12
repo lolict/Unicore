@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniCore Web - 在线虚拟机</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid #0f3460;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #00d4ff;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .subtitle {
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: rgba(15, 52, 96, 0.5);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #0f3460;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .panel-title {
+            font-size: 1.3em;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-title::before {
+            content: '▶';
+            color: #00d4ff;
+        }
+
+        .code-editor {
+            width: 100%;
+            min-height: 300px;
+            background: #0d1b2a;
+            border: 1px solid #1b3a5c;
+            border-radius: 10px;
+            padding: 15px;
+            color: #00ff88;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            resize: vertical;
+            outline: none;
+        }
+
+        .code-editor:focus {
+            border-color: #00d4ff;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff, #0077b6);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00ff88, #00b894);
+            color: #1a1a2e;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+        }
+
+        .registers {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 8px;
+        }
+
+        .reg-item {
+            background: #0d1b2a;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #1b3a5c;
+        }
+
+        .reg-name {
+            color: #00d4ff;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .reg-value {
+            color: #00ff88;
+            font-family: monospace;
+            font-size: 1.1em;
+            margin-top: 5px;
+        }
+
+        .output {
+            background: #0d1b2a;
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 150px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+            border: 1px solid #1b3a5c;
+        }
+
+        .output-line {
+            margin: 5px 0;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .output-success {
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+        }
+
+        .output-error {
+            background: rgba(255, 107, 107, 0.1);
+            color: #ff6b6b;
+        }
+
+        .output-info {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00d4ff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            background: #0d1b2a;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #1b3a5c;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .memory-view {
+            background: #0d1b2a;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            border: 1px solid #1b3a5c;
+        }
+
+        .memory-row {
+            display: flex;
+            gap: 15px;
+            padding: 3px 0;
+        }
+
+        .memory-addr {
+            color: #00d4ff;
+            min-width: 100px;
+        }
+
+        .memory-hex {
+            color: #ff6b6b;
+            min-width: 200px;
+        }
+
+        .memory-dec {
+            color: #00ff88;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            border-top: 1px solid #0f3460;
+            margin-top: 40px;
+        }
+
+        .examples {
+            margin-top: 15px;
+        }
+
+        .example-btn {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            color: #00d4ff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+
+        .example-btn:hover {
+            background: rgba(0, 212, 255, 0.3);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #1b3a5c;
+            border-top: 3px solid #00d4ff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ UniCore Web</h1>
+            <p class="subtitle">在线 UniISA 虚拟机 - 无需安装，直接运行</p>
+        </header>
+
+        <div class="main-grid">
+            <div class="left-column">
+                <div class="panel">
+                    <div class="panel-title">📝 汇编代码编辑器</div>
+                    <textarea id="codeEditor" class="code-editor" placeholder="输入 UniCore 汇编代码..."></textarea>
+                    
+                    <div class="examples">
+                        <span style="color: #888;">示例:</span>
+                        <button class="example-btn" onclick="loadExample('basic')">基础运算</button>
+                        <button class="example-btn" onclick="loadExample('fibonacci')">斐波那契</button>
+                        <button class="example-btn" onclick="loadExample('factorial')">阶乘</button>
+                        <button class="example-btn" onclick="loadExample('loop')">循环</button>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="runCode()">▶ 运行</button>
+                        <button class="btn btn-primary" onclick="stepCode()">⏭ 单步</button>
+                        <button class="btn btn-danger" onclick="resetVM()">⟲ 重置</button>
+                        <button class="btn btn-primary" onclick="stopCode()">⏹ 停止</button>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top: 20px;">
+                    <div class="panel-title">📊 执行统计</div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="cycleCount">0</div>
+                            <div class="stat-label">执行周期</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="instrCount">0</div>
+                            <div class="stat-label">指令数</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="execTime">0ms</div>
+                            <div class="stat-label">执行时间</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top: 20px;">
+                    <div class="panel-title">📤 输出</div>
+                    <div class="output" id="output">
+                        <div class="output-line output-info">等待运行...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-column">
+                <div class="panel">
+                    <div class="panel-title">🔧 寄存器状态</div>
+                    <div class="registers" id="registers">
+                    </div>
+                </div>
+
+                <div class="panel" style="margin-top: 20px;">
+                    <div class="panel-title">💾 内存预览</div>
+                    <div class="memory-view" id="memoryView">
+                        <div style="color: #666;">内存地址          Hex值                    Decimal值</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>UniCore - 通用核心平台 | 使用纯 JavaScript 实现，无需服务器</p>
+            <p style="margin-top: 10px;">GitHub: <a href="https://github.com/lolict/Unicore" style="color: #00d4ff;">github.com/lolict/Unicore</a></p>
+        </footer>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p style="margin-top: 10px;">执行中...</p>
+    </div>
+
+    <script>
+        // UniCore VM Implementation
+        class UniCoreVM {
+            constructor() {
+                this.registers = new Array(64).fill(0);
+                this.memory = new Array(16 * 1024 * 1024).fill(0);
+                this.pc = 0x1000;
+                this.sp = this.memory.length - 8;
+                this.flags = 0;
+                this.halted = false;
+                this.cycles = 0;
+                this.instrCount = 0;
+            }
+
+            reset() {
+                this.registers = new Array(64).fill(0);
+                this.memory = new Array(16 * 1024 * 1024).fill(0);
+                this.pc = 0x1000;
+                this.sp = this.memory.length - 8;
+                this.flags = 0;
+                this.halted = false;
+                this.cycles = 0;
+                this.instrCount = 0;
+            }
+
+            loadProgram(program) {
+                for (let i = 0; i < program.length; i++) {
+                    this.memory[this.pc + i * 4] = program[i];
+                }
+            }
+
+            step() {
+                if (this.halted) return false;
+
+                const raw = this.memory[this.pc] | 
+                           (this.memory[this.pc + 1] << 8) |
+                           (this.memory[this.pc + 2] << 16) |
+                           (this.memory[this.pc + 3] << 24);
+
+                const op = raw & 0xFF;
+                const rd = (raw >> 8) & 0x3F;
+                const rs = (raw >> 14) & 0x3F;
+                const rt = (raw >> 20) & 0x3F;
+                const imm = (raw >> 26) & 0x3F;
+
+                this.pc += 4;
+                this.cycles++;
+                this.instrCount++;
+
+                switch (op) {
+                    case 0x00: break; // NOP
+                    case 0x01: this.registers[rd] = this.registers[rs] + this.registers[rt]; break;
+                    case 0x02: this.registers[rd] = this.registers[rs] - this.registers[rt]; break;
+                    case 0x03: this.registers[rd] = this.registers[rs] * this.registers[rt]; break;
+                    case 0x04: if (this.registers[rt] !== 0) this.registers[rd] = Math.floor(this.registers[rs] / this.registers[rt]); break;
+                    case 0x05: this.registers[rd] = this.registers[rs] & this.registers[rt]; break;
+                    case 0x06: this.registers[rd] = this.registers[rs] | this.registers[rt]; break;
+                    case 0x07: this.registers[rd] = this.registers[rs] ^ this.registers[rt]; break;
+                    case 0x08: this.registers[rd] = this.registers[rs]; break;
+                    case 0x09: this.registers[rd] = imm; break;
+                    case 0x0A: {
+                        const addr = this.registers[rs] + imm;
+                        this.registers[rd] = this.memory[addr] | (this.memory[addr+1] << 8) |
+                                          (this.memory[addr+2] << 16) | (this.memory[addr+3] << 24);
+                        break;
+                    }
+                    case 0x0B: {
+                        const addr = this.registers[rd] + imm;
+                        const val = this.registers[rs];
+                        this.memory[addr] = val & 0xFF;
+                        this.memory[addr+1] = (val >> 8) & 0xFF;
+                        this.memory[addr+2] = (val >> 16) & 0xFF;
+                        this.memory[addr+3] = (val >> 24) & 0xFF;
+                        break;
+                    }
+                    case 0x0C: this.pc = imm * 4; break;
+                    case 0x0D: if (this.flags === 0) this.pc = imm * 4; break;
+                    case 0x0E: if (this.flags !== 0) this.pc = imm * 4; break;
+                    case 0x0F: this.registers[63] = this.pc; this.pc = imm * 4; break;
+                    case 0x10: this.pc = this.registers[63]; break;
+                    case 0x11: this.sp -= 8; this.writeMem(this.sp, this.registers[rd]); break;
+                    case 0x12: this.registers[rd] = this.readMem(this.sp); this.sp += 8; break;
+                    case 0x13: {
+                        const diff = this.registers[rs] - this.registers[rt];
+                        this.flags = diff === 0 ? 0 : (diff < 0 ? 1 : 2);
+                        break;
+                    }
+                    case 0xFF: this.halted = true; break;
+                }
+
+                return !this.halted;
+            }
+
+            readMem(addr) {
+                return this.memory[addr] | (this.memory[addr+1] << 8) |
+                       (this.memory[addr+2] << 16) | (this.memory[addr+3] << 24);
+            }
+
+            writeMem(addr, val) {
+                this.memory[addr] = val & 0xFF;
+                this.memory[addr+1] = (val >> 8) & 0xFF;
+                this.memory[addr+2] = (val >> 16) & 0xFF;
+                this.memory[addr+3] = (val >> 24) & 0xFF;
+            }
+
+            run(maxCycles = 100000) {
+                const startTime = performance.now();
+                while (!this.halted && this.cycles < maxCycles) {
+                    this.step();
+                }
+                return performance.now() - startTime;
+            }
+        }
+
+        // Assembler
+        class Assembler {
+            constructor() {
+                this.opcodes = {
+                    'NOP': 0x00, 'ADD': 0x01, 'SUB': 0x02, 'MUL': 0x03, 'DIV': 0x04,
+                    'AND': 0x05, 'OR': 0x06, 'XOR': 0x07, 'MOV': 0x08, 'MOVI': 0x09,
+                    'LOAD': 0x0A, 'STORE': 0x0B, 'JMP': 0x0C, 'JE': 0x0D, 'JNE': 0x0E,
+                    'CALL': 0x0F, 'RET': 0x10, 'PUSH': 0x11, 'POP': 0x12, 'CMP': 0x13,
+                    'HALT': 0xFF
+                };
+            }
+
+            assemble(source) {
+                const program = [];
+                const lines = source.trim().split('\n');
+
+                for (const line of lines) {
+                    const cleanLine = line.split(';')[0].trim();
+                    if (!cleanLine) continue;
+
+                    const parts = cleanLine.replace(/,/g, ' ').split(/\s+/);
+                    const opName = parts[0].toUpperCase();
+                    const opcode = this.opcodes[opName];
+                    if (!opcode) continue;
+
+                    let rd = 0, rs = 0, rt = 0, imm = 0;
+
+                    for (let i = 1; i < parts.length && i < 5; i++) {
+                        const arg = parts[i];
+                        if (arg.startsWith('R') || arg.startsWith('r')) {
+                            const val = parseInt(arg.substring(1));
+                            if (i === 1) rd = val;
+                            else if (i === 2) rs = val;
+                            else if (i === 3) rt = val;
+                        } else {
+                            imm = parseInt(arg) || 0;
+                        }
+                    }
+
+                    const instr = opcode | (rd << 8) | (rs << 14) | (rt << 20) | (imm << 26);
+                    program.push(instr);
+                }
+
+                return program;
+            }
+        }
+
+        // Global instances
+        const vm = new UniCoreVM();
+        const assembler = new Assembler();
+
+        // Examples
+        const examples = {
+            basic: `MOVI R1, 10
+MOVI R2, 20
+ADD R3, R1, R2
+SUB R4, R1, R2
+MUL R5, R1, R2
+DIV R6, R5, R2
+HALT`,
+            fibonacci: `MOVI R1, 0
+MOVI R2, 1
+MOVI R3, 10
+MOVI R4, 0
+STORE R1, [R4]
+ADDI R4, R4, 1
+STORE R2, [R4]
+ADDI R4, R4, 1
+ADD R5, R1, R2
+MOV R1, R2
+MOV R2, R5
+ADDI R3, R3, -1
+STORE R5, [R4]
+ADDI R4, R4, 1
+CMP R3, R0
+JNE fibonacci
+HALT`,
+            factorial: `MOVI R1, 5
+MOVI R2, 1
+loop:
+MUL R2, R2, R1
+ADDI R1, R1, -1
+CMP R1, R0
+JNE loop
+HALT`,
+            loop: `MOVI R1, 0
+MOVI R2, 100
+loop:
+ADDI R1, R1, 1
+CMP R1, R2
+JNE loop
+HALT`
+        };
+
+        function loadExample(name) {
+            document.getElementById('codeEditor').value = examples[name];
+        }
+
+        function updateUI() {
+            // Update registers
+            const regContainer = document.getElementById('registers');
+            let regHTML = '';
+            for (let i = 0; i < 16; i++) {
+                regHTML += `<div class="reg-item">
+                    <div class="reg-name">R${i}</div>
+                    <div class="reg-value">${vm.registers[i]}</div>
+                </div>`;
+            }
+            regContainer.innerHTML = regHTML;
+
+            // Update memory
+            const memContainer = document.getElementById('memoryView');
+            let memHTML = '<div style="color: #666;">地址&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Hex值&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Decimal值</div>';
+            for (let addr = 0x1000; addr < 0x1040; addr += 4) {
+                const val = vm.readMem(addr);
+                memHTML += `<div class="memory-row">
+                    <span class="memory-addr">0x${addr.toString(16).toUpperCase()}</span>
+                    <span class="memory-hex">0x${val.toString(16).toUpperCase().padStart(8, '0')}</span>
+                    <span class="memory-dec">${val}</span>
+                </div>`;
+            }
+            memContainer.innerHTML = memHTML;
+
+            // Update stats
+            document.getElementById('cycleCount').textContent = vm.cycles;
+            document.getElementById('instrCount').textContent = vm.instrCount;
+        }
+
+        function addOutput(text, type = 'info') {
+            const output = document.getElementById('output');
+            const line = document.createElement('div');
+            line.className = `output-line output-${type}`;
+            line.textContent = text;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function runCode() {
+            const code = document.getElementById('codeEditor').value;
+            try {
+                const program = assembler.assemble(code);
+                vm.reset();
+                vm.loadProgram(program);
+                
+                addOutput(`📦 程序已加载: ${program.length} 条指令`, 'info');
+                
+                const startTime = performance.now();
+                const execTime = vm.run();
+                
+                document.getElementById('execTime').textContent = execTime.toFixed(2) + 'ms';
+                
+                updateUI();
+                addOutput(`✅ 执行完成! 周期: ${vm.cycles}`, 'success');
+                
+                // Show key results
+                addOutput(`R1 = ${vm.registers[1]}`, 'info');
+                addOutput(`R2 = ${vm.registers[2]}`, 'info');
+                addOutput(`R3 = ${vm.registers[3]}`, 'info');
+            } catch (e) {
+                addOutput(`❌ 错误: ${e.message}`, 'error');
+            }
+        }
+
+        function stepCode() {
+            const code = document.getElementById('codeEditor').value;
+            if (vm.pc === 0x1000) {
+                try {
+                    const program = assembler.assemble(code);
+                    vm.reset();
+                    vm.loadProgram(program);
+                    addOutput('🔍 单步调试模式', 'info');
+                } catch (e) {
+                    addOutput(`❌ 错误: ${e.message}`, 'error');
+                    return;
+                }
+            }
+            
+            if (!vm.step()) {
+                addOutput('✅ 程序结束', 'success');
+                vm.halted = false;
+                vm.pc = 0x1000;
+            }
+            
+            updateUI();
+        }
+
+        function resetVM() {
+            vm.reset();
+            updateUI();
+            document.getElementById('output').innerHTML = '<div class="output-line output-info">虚拟机已重置</div>';
+            document.getElementById('execTime').textContent = '0ms';
+        }
+
+        function stopCode() {
+            vm.halted = true;
+            addOutput('⏹ 已停止', 'info');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadExample('basic');
+            updateUI();
+            addOutput('🎉 UniCore Web 已就绪', 'success');
+        });
+    </script>
+</body>
+</html>
