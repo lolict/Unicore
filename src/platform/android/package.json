@@ -1,0 +1,43 @@
+{
+    "name": "UniCore",
+    "appid": "__UNI__UNICORE",
+    "description": "统一智能核心系统 - 跨平台运行时",
+    "versionName": "1.0.0",
+    "versionCode": "100",
+    "transformPx": false,
+    "app-plus": {
+        "usingComponents": true,
+        "splashscreen": {
+            "alwaysShowBeforeRender": true,
+            "waiting": true,
+            "autoclose": true,
+            "delay": 0
+        },
+        "modules": {
+            "Camera": {},
+            "Geolocation": {},
+            "Vibration": {}
+        },
+        "distribute": {
+            "android": {
+                "permissions": [
+                    "<uses-permission android:name=\"android.permission.INTERNET\"/>",
+                    "<uses-permission android:name=\"android.permission.VIBRATE\"/>",
+                    "<uses-permission android:name=\"android.permission.CAMERA\"/>",
+                    "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>"
+                ],
+                "targetSdkVersion": 33,
+                "minSdkVersion": 21
+            },
+            "ios": {
+                "dSYMs": false
+            }
+        }
+    },
+    "h5": {
+        "devServer": {
+            "port": 8080,
+            "disableHostCheck": true
+        }
+    }
+}
